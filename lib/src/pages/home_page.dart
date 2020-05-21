@@ -31,11 +31,14 @@ class _HomeState extends State<HomePage>{
   String number = "";
   String adress = "";
   String initialDirection = "";
+  String messageID = '';
    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
  //String token ='cH_Pp7Wj3Ns:APA91bEpGf8FpUHAloXXd-SRKeYayLINX5ECdshaXRQq6tUOuMi6HkE9l81cwVHqKeOsPNtxV2i2U9eMLLQuZI5MNbhfGPLvzgg-HGY_OLFYwnqEx4s-yIojItkEzM9JlAbiSP2pcgfI';
   final myController1 = TextEditingController();
   final myController2 = TextEditingController();
   Timer _timer;
+  Timer _timer2;
+  String idMessage = '';
 
   //List userObject = [];
 
@@ -108,15 +111,80 @@ class _HomeState extends State<HomePage>{
                 Padding(padding: const EdgeInsets.all(10)),
                 RaisedButton(  
                   onPressed: () {
+        
                     showDialog(
                       context: context,
+                      barrierDismissible: false,
                       builder: (BuildContext context){
-                        return AlertDialog(
-                          title: (Text('Estamos procesando tu solicitud')),
-                          content: Text('Espera unos pocos segundos.'),
-                          actions: <Widget>[
-                            
-                          ],          
+                        Future.delayed(Duration(seconds: 25), () {
+                          Navigator.of(context).pop(true);
+                          _isTrackerTake(messageID);
+                        });
+                        return Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)
+                          ), 
+                          child: Container(
+                            height:200,
+                            child: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  StreamBuilder(
+                                    stream: Firestore.instance
+                                      .collection("Tracking")
+                                      .document("vacio")
+                                      .snapshots(),
+                                    builder: (context, f) {
+                                      if (!f.hasData ) {    
+                                         return Center(
+                                          child:Column(
+                                            children: <Widget>[
+                                              
+                                              Text('Alguien a tomado tu solicitud.'),
+                                              Text('Pronto llegara un repartidor.'),
+                                              //Padding(padding: EdgeInsets.all(10) ),
+                                              //CircularProgressIndicator(),
+                                              FlatButton(
+                                                color: Color(0xff90395d),
+                                                textColor: Colors.white,
+                                                onPressed: (){ Navigator.pop(context);}, 
+                                                child: Text('Ok!'))
+                                            ],
+                                          )
+                                        );
+                                      }else{
+                                        return Center(
+                                          child:Column(
+                                            children: <Widget>[
+                                              Text('Procesando...'),
+                                              Padding(padding: EdgeInsets.all(10) ),
+                                              CircularProgressIndicator(),
+                                              Padding(padding: EdgeInsets.all(10)),
+                                              FlatButton(
+                                                color: Color(0xff90395d),
+                                                textColor: Colors.white,
+                                                onPressed: (){ 
+                                                  Navigator.pop(context);
+                                                  _cancelarRepartidor(messageID);
+                                                  print('messageID cancelado: ${messageID}');
+                                                }, 
+                                                child: Text('Cancelar')
+                                              ),
+                                              
+                                            ],
+                                          )
+                                        );
+                                        //Text('No se encuentran los datos, verifica tu conneccion a internet');
+                                      }
+                                    },
+                                  ),              
+                                ],
+                              ),
+                            ),
+                          ),          
                         );
                       }
                     );           
@@ -125,8 +193,10 @@ class _HomeState extends State<HomePage>{
                    _timer = new Timer(const Duration(milliseconds: 400), () {
                     setState(() {
                       _getData();
+                      
                     });
                   });
+                   
                   // _getData();
                 
                   },
@@ -155,6 +225,76 @@ class _HomeState extends State<HomePage>{
     );
   }
 
+  _cancelarRepartidor(a){
+    
+    try {
+      databaseReference
+          .collection('Messages')
+          .document(a)
+          .updateData({'activo': 'desactivado'});
+    } catch (e) {
+      print(e.toString());
+    }
+  
+
+  }
+
+  _isTrackerTake(idMessage) async{
+
+    print('este es el id: $idMessage');
+    DocumentReference documentReference =
+      Firestore.instance.collection("Tracking").document(idMessage);
+
+    documentReference.get().then((datasnapshot) {
+      if (datasnapshot.exists) {
+        showDialog(
+          context: this.context,
+          child:new Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            child: Container(
+              height: 100,
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Center(child:Text('Alguien ya tomó tu pedido',style:TextStyle(fontSize: 18), textAlign: TextAlign.center,))
+                  ],
+                ),
+              )
+            ),
+          )
+        );            
+      }else{
+        showDialog(
+          context: this.context,
+          child:new Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            child: Container(
+              height: 100,
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Center(child:Text('No hay repartidor disponible, intenta de nuevo.',style:TextStyle(fontSize: 18), textAlign: TextAlign.center,))
+                  ],
+                ),
+              )
+            ),
+          )
+        );
+      }
+    });
+   
+  }
+
   _createRecord(mensaje, direccionFinal) {
     
     var fecha = new DateTime.now();
@@ -173,7 +313,8 @@ class _HomeState extends State<HomePage>{
         'activo':'activo',
       });
       print(ref.documentID);
-    //return ref.documentID;
+      idMessage = ref.documentID;
+    return ref.documentID;
   } 
 
   _getTokens(){
@@ -196,11 +337,6 @@ class _HomeState extends State<HomePage>{
   _getData(){
   
     _getUsersNear();
-    //_getTokens();
-    //Future.delayed(const Duration(milliseconds: 3000));
-    //print('delay');
-    //List usuarios = [];
-    //List cercanos = [];
     int i = 0;
     databaseReference
       .collection("Users")
@@ -250,7 +386,7 @@ class _HomeState extends State<HomePage>{
         );
       });
           
-          _createRecord(myController2.text, myController1.text);
+          messageID =_createRecord(myController2.text, myController1.text);
   } 
 
   void updateTokens(a) {
@@ -328,14 +464,14 @@ class _HomeState extends State<HomePage>{
     //return deviceToken;
   } 
 
-    _getPhoneNumber() async {
+  _getPhoneNumber() async {
 
      final documents = await databaseReference.collection('Users').where("email", isEqualTo: widget.name).getDocuments();
      final userObject = documents.documents.first.data;
      number = userObject['telefono'];
      return number;
    
- }
+  }
   _getAddress() async {
 
      final documents = await databaseReference.collection('Users').where("email", isEqualTo: widget.name).getDocuments();
@@ -345,7 +481,6 @@ class _HomeState extends State<HomePage>{
    
  }
 
-  
   void createUser(b) async {
     //_getCurrentLocation();
     //GeoPoint(position, longitude)
