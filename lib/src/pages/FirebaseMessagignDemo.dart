@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:location/location.dart';
+import 'package:push_notifications/src/bloc/authentication_bloc/bloc.dart';
 import 'package:push_notifications/src/pages/look_messages.dart';
+import 'list_view_conductor.dart';
 
 //import 'package:push_notifications/src/pages/look_messages.dart';
 //import 'package:push_notifications/src/widgets/headers.dart';
@@ -61,7 +65,7 @@ class _FirebaseMessagingDemoState extends State<FirebaseMessagingDemo> {
                             child: Text('Tomar viaje'),
                             onPressed: () => Navigator.push(context, 
                               MaterialPageRoute(
-                                builder:(context) => LookMessage(id: message['data']['message'],))),
+                                builder:(context) => LookMessage(id: message['data']['message'], name:widget.name))),
                         ),
                         FlatButton(
                             child: Text('Declinar'),
@@ -220,7 +224,31 @@ _getData(deviceToken) async{
        
       ),
        ),
-
+      floatingActionButton: SpeedDial(
+        animatedIcon: AnimatedIcons.menu_close,
+        backgroundColor: Color(0xff914aaa),
+        children: [
+          SpeedDialChild(
+            child: Icon(Icons.list),
+            label: 'Tus viajes',
+            backgroundColor: Color(0xffca5198),
+            onTap: () {
+              Navigator.push(context, 
+              MaterialPageRoute(
+                builder:(context) => VerViajesChofer(name:widget.name )));
+            }
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.exit_to_app),
+            label: 'Salir',
+            backgroundColor: Color(0xffca5198),
+            onTap: () {
+               BlocProvider.of<AuthenticationBloc>(context).add(LoggedOut());
+               SystemNavigator.pop();
+            }
+          ),
+        ]
+      )
     );
   }
   

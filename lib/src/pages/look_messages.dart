@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:push_notifications/src/pages/FirebaseMessagignDemo.dart';
 import 'package:push_notifications/src/pages/delivery_track.dart';
 
 class LookMessage extends StatefulWidget {
   final String id;
-  LookMessage({Key key, @required this.id}) : super(key:key);
+  final String name;
+  LookMessage({Key key, @required this.id, @required this.name}) : super(key:key);
 
   @override
   _LookMessageState createState() => _LookMessageState();
@@ -138,7 +140,9 @@ class _LookMessageState extends State<LookMessage> {
                   onPressed: () {
                     
                     print("Declinado");
-                    SystemNavigator.pop();
+                    Navigator.push(context, 
+                      MaterialPageRoute(
+                        builder:(context) => FirebaseMessagingDemo(name:widget.name)));
 
                   },
                   textColor: Colors.white,
@@ -189,7 +193,7 @@ class _LookMessageState extends State<LookMessage> {
           // _borrarMessage(datasnapshot.data['id']);
           Navigator.push(context, 
                       MaterialPageRoute(
-                        builder:(context) => DeliveryTrack(id:widget.id)));
+                        builder:(context) => DeliveryTrack(id:widget.id, name:widget.name)));
         }else{
           print('el dato es inactivo');
           _alert('llegas muy tarde', 'Intentalo la próxima vez.');
@@ -220,6 +224,8 @@ class _LookMessageState extends State<LookMessage> {
         'direccion_final':f,
         'fecha': fecha,
         'estado':'activo',
+        'tienda': d,
+        'repartidor':widget.name
 
       });    
   }
@@ -234,7 +240,9 @@ class _LookMessageState extends State<LookMessage> {
           actions: <Widget>[
             FlatButton(
               onPressed: (){
-                SystemNavigator.pop();
+                Navigator.push(context, 
+                      MaterialPageRoute(
+                        builder:(context) => FirebaseMessagingDemo(name:widget.name)));
               }, 
               child: Text('Finalizar')
             )
@@ -242,20 +250,7 @@ class _LookMessageState extends State<LookMessage> {
         );
       }
     );           
-  }
-
-   /*void _borrarMessage(data){ 
-    try { 
-      databaseReference
-        .collection('Messages') 
-        .document(data) 
-        .delete().then((_){
-          print(data);
-        }); 
-    } catch(e) { 
-      print(e.toString ()); 
-    } 
-  }*/
+  }   
 
   void _desactivar(b){
     try {

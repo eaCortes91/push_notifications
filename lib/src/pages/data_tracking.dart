@@ -1,56 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-//import 'package:geolocator/geolocator.dart';
-import 'package:location/location.dart';
 
-import 'FirebaseMessagignDemo.dart';
-
-class DeliveryTrack extends StatefulWidget {
+class DataTracking extends StatefulWidget {
   final String id;
-  final String name;
-  DeliveryTrack({Key key, @required this.id, @required this.name}) : super(key:key);
+  DataTracking({Key key, @required this.id}) : super(key:key);
 
   @override
-  _DeliveryTrackState createState() => _DeliveryTrackState();
+  _DataTrackingState createState() => _DataTrackingState();
 }
 
-class _DeliveryTrackState extends State<DeliveryTrack> {
+class _DataTrackingState extends State<DataTracking> {
 
   final databaseReference = Firestore.instance;
-  //String _locationMessage = "";
-  LocationData currentLocation;
-  Location location;
-
+  
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    //_getbool(widget.name);
-    location = new Location();
-    location.onLocationChanged.listen((LocationData cLoc){
-      //return currentLocation = cLoc;
-      //print(cLoc.latitude);
-      double lat = cLoc.latitude;
-      double long = cLoc.longitude;
-      _trackingDevice(lat, long);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
       
-    });
-    super.initState();
-    //_borrarMessage(widget.id);
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomPaint(
-        painter: _HeaderCurvoPainter(),
-        child: Center(
-        child:Align(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              StreamBuilder(
+      body:CustomPaint(
+       painter: _HeaderCurvoPainter(),
+       child: Center(
+          child: Align(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Divider(
+                  color: Colors.red
+                ),
+                
+                StreamBuilder(
                   stream: Firestore.instance
                     .collection("Tracking")
                     .document(widget.id)
@@ -115,7 +103,7 @@ class _DeliveryTrackState extends State<DeliveryTrack> {
                               fontSize: 18.0,
                               color: Color(0xffc75090)
                             ),
-                          textAlign: TextAlign.center,)
+                          textAlign: TextAlign.center,),
                         ],
                       );
                     }else{
@@ -124,83 +112,22 @@ class _DeliveryTrackState extends State<DeliveryTrack> {
                   },
                 ),
                 Padding(padding: EdgeInsets.all(10)),
-              RaisedButton(
-                onPressed: (){
-                  _alert();
-                  print("Me pachuraron bro :(");
-                },
-                textColor: Colors.white,
-                  padding: const EdgeInsets.all(0.0),
-                  child: Container(
-                    decoration:const BoxDecoration(
-                      gradient: LinearGradient(colors: <Color>[
-                        Color(0xFF914aaa),                      
-                        Color(0xFFca5198),
-                      ],
-                      ),
-                    ),
-                    padding: const EdgeInsets.all(10),
-                    child: Text('Finalizar',
-                      style: TextStyle(
-                      fontSize:20,
-                      color: Colors.white
-                      ),
-                    )
-                  )
-              )
-            ],
-          ),
-        ),
-      ),
-      )
-    );
-  }
-
-  void _alert(){
-    showDialog(
-      context: context,
-      builder: (BuildContext context){
-        return AlertDialog(
-          title: (Text('Finalizar viaje.')),
-          content: Text('haz finalizado el viaje y los datos se guardaran en la base de datos'),
-          actions: <Widget>[
-            FlatButton(
-              onPressed: (){
-                _desactivar();
-                Navigator.push(context, 
-                      MaterialPageRoute(
-                        builder:(context) => FirebaseMessagingDemo(name:widget.name)));
+                Divider(
+                  color: Colors.red
+                ),
+                Row(
+                 mainAxisAlignment: MainAxisAlignment.center,
+                 children:<Widget>[
+                  
+                Padding(padding: EdgeInsets.all(10)),
                 
-       
-              }, 
-              child: Text('Finalizar')
-            )
-          ],          
-        );
-      }
-    );           
-  }
-   
-  void _trackingDevice(a, b){
-    try {
-      databaseReference
-        .collection('Tracking')
-        .document(widget.id)
-        .updateData({'recorrido': FieldValue.arrayUnion([a,GeoPoint(a, b)])});
-    } catch (e) {
-      print(e.toString());
-    }
-  }
-
-  void _desactivar(){
-    try {
-      databaseReference
-        .collection('Tracking')
-        .document(widget.id)
-        .updateData({'estado': 'inactivo'});
-    } catch (e) {
-      print(e.toString());
-    }
+               ])
+              ],
+            ),
+          )
+      ),
+     ) 
+    );
   }
 }
 
@@ -231,5 +158,3 @@ class _HeaderCurvoPainter extends CustomPainter{
     return true;
   }
 }
-
-   

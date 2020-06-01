@@ -4,9 +4,14 @@ import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:location/location.dart';
 import 'dart:math' show cos, sqrt, asin;
 import 'package:flutter/services.dart';
+import 'package:push_notifications/src/bloc/authentication_bloc/bloc.dart';
+
+import 'listView.dart';
 
 //import 'package:push_notifications/src/widgets/headers.dart';
 
@@ -32,7 +37,7 @@ class _HomeState extends State<HomePage>{
   String adress = "";
   String initialDirection = "";
   String messageID = '';
-   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
  //String token ='cH_Pp7Wj3Ns:APA91bEpGf8FpUHAloXXd-SRKeYayLINX5ECdshaXRQq6tUOuMi6HkE9l81cwVHqKeOsPNtxV2i2U9eMLLQuZI5MNbhfGPLvzgg-HGY_OLFYwnqEx4s-yIojItkEzM9JlAbiSP2pcgfI';
   final myController1 = TextEditingController();
   final myController2 = TextEditingController();
@@ -71,6 +76,7 @@ class _HomeState extends State<HomePage>{
           child: Align(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              //crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Image.asset('assets/motonetapng.png',
                   scale: 5,), 
@@ -217,10 +223,36 @@ class _HomeState extends State<HomePage>{
                       color: Colors.white)),
                   ),
                 ),
+                
               ],
             ),
           )
         ),
+      ),
+      floatingActionButton: SpeedDial(
+        animatedIcon: AnimatedIcons.menu_close,
+        backgroundColor: Color(0xff914aaa),
+        children: [
+          SpeedDialChild(
+            child: Icon(Icons.list),
+            label: 'Tus pedidos',
+            backgroundColor: Color(0xffca5198),
+            onTap: () {
+              Navigator.push(context, 
+              MaterialPageRoute(
+                builder:(context) => VerViajes(name:widget.name )));
+            }
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.exit_to_app),
+            label: 'Salir',
+            backgroundColor: Color(0xffca5198),
+            onTap: () {
+               BlocProvider.of<AuthenticationBloc>(context).add(LoggedOut());
+               SystemNavigator.pop();
+            }
+          ),
+        ]
       )
     );
   }
@@ -311,6 +343,7 @@ class _HomeState extends State<HomePage>{
         'direccion_final': direccionFinal,
         'numero': number,
         'activo':'activo',
+        'tienda':widget.name,
       });
       print(ref.documentID);
       idMessage = ref.documentID;
