@@ -96,8 +96,9 @@ class _VerViajesState extends State<VerViajes> {
                       );
                     }
                     }
-                    else{
-                      print('acceso no autorizado');
+                     else{
+                      
+                      return Padding(padding: EdgeInsets.all(0));
                     }
                     
                   }

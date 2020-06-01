@@ -22,6 +22,7 @@ class _VerViajesChoferState extends State<VerViajesChofer> {
   var direccion_inicial = "";
   var messagge = "";
   var numero = "";
+  var a = 1;
 
   @override
   void initState() {
@@ -46,7 +47,7 @@ class _VerViajesChoferState extends State<VerViajesChofer> {
                   itemBuilder: (BuildContext context, int index) {
                     print(snapshot.data.documents.length);
                     print(widget.name);
-                        print(snapshot.data.documents[index].documentID);
+                    print(snapshot.data.documents[index].documentID);
                     if(snapshot.data.documents[index].data['repartidor'] == widget.name){
                       if(snapshot.data.documents[index].data['estado'] == 'activo'){
                         
@@ -83,7 +84,7 @@ class _VerViajesChoferState extends State<VerViajesChofer> {
                           ),
                         );
                       }
-                      if(snapshot.data.documents[index].data['estado'] == 'inactivo'){
+                      else{
                        
                         return  Card(
                         shape: RoundedRectangleBorder(
@@ -111,12 +112,16 @@ class _VerViajesChoferState extends State<VerViajesChofer> {
                         ],
                       ),
                       );
-                    }
+                      }
                     }
                     
-                    
+                    else{
+                      
+                      return Padding(padding: EdgeInsets.all(0));
+                    }
                   }
                 );
+                
              }
           ) 
     );
